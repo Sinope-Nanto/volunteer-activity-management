@@ -49,4 +49,4 @@ class LoginView(APIView):
         if result == 0:
             return APIResponse.create_fail(code=401, msg="Incorrect username or password")
         else:
-            return APIResponse.create_fail(code=410, msg="Account status is abnormal")
+            return APIResponse.create_fail(code=403, msg="Account status is abnormal")
