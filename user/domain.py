@@ -46,3 +46,12 @@ def get_role(id):
         return 3
     return user.role   
 
+def role_to_str(role):
+    if role == 0:
+        return 'administrator'
+    elif role == 1:
+        return 'donor'
+    elif role == 2:
+        return 'volunteer'
+    else:
+        return 'the others'

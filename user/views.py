@@ -2,7 +2,7 @@ from rest_framework.views import APIView
 from utils.api_response import APIResponse
 from .enum import UserRole, UserStatus
 from .models import UserProflie, UserToken
-from .domain import generate_token, verify_user_by_password, verify_user_by_token, get_role
+from .domain import generate_token, verify_user_by_password, verify_user_by_token, get_role, role_to_str
 from django.core.exceptions import ObjectDoesNotExist
 import random
 from datetime import datetime, timedelta
@@ -121,3 +121,44 @@ class ChangeUserProflieView(APIView):
         user.last_name = post_data['last_name']
         user.save()
         return APIResponse.create_success()
+
+class SearchUserView(APIView):
+
+    def post(self, request):
+        token = request.headers['token']
+        post_data = request.data
+        if not verify_user_by_token(token)[0] == UserRole.ADMIN:
+            return APIResponse.create_fail(code=401, msg="you don't enough permissions")
+        user_list = UserProflie.objects.all()
+        if ('first_name' in post_data.keys()) and (not post_data['first_name'] == ''):
+            user_list = user_list.filter(first_name=post_data['first_name'])
+        if ('last_name' in post_data.keys()) and (not post_data['last_name'] == ''):
+            user_list = user_list.filter(last_name=post_data['last_name'])
+        if ('role' in post_data.keys()) and (not post_data['role'] == ''):
+            user_list = user_list.filter(role=(post_data['role']))
+        id_list = []
+        for user in user_list:
+            id_list.append(user.user_id)
+        return APIResponse.create_success(data={
+            'id_list' : id_list
+        })
+
+class GetUserProflieView(APIView):
+
+    def post(self, request):
+        token = request.headers['token']
+        post_data = request.data
+        (role, id) = verify_user_by_token(token)
+        if not (role == UserRole.ADMIN or id == post_data['id']):
+            return APIResponse.create_fail(code=401, msg="you don't enough permissions")
+        try:
+            user = UserProflie.objects.get(user_id=post_data['id'])
+        except ObjectDoesNotExist:
+            return APIResponse.create_fail(code=404, msg = 'User does not exist')
+        return APIResponse.create_success(data={
+            'id' : user.user_id,
+            'first_name' : user.first_name,
+            'last_name' : user.last_name,
+            'role' : role_to_str(user.role),
+            'status' : str(user.status)
+        })
