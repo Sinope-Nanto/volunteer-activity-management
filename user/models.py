@@ -13,6 +13,6 @@ class UserProflie(models.Model):
 class UserToken(models.Model):
     user_id = models.CharField(null=False, max_length=100)
     token = models.CharField(max_length=100)
-    start = models.TimeField(default=datetime.datetime.now())
-    end = models.TimeField(default=datetime.datetime.now())
+    start = models.DateTimeField(default=datetime.datetime.now())
+    end = models.DateTimeField(default=datetime.datetime.now())
     status = models.BooleanField(default=True)

@@ -5,6 +5,8 @@ from .enum import UserStatus, UserRole
 from datetime import datetime, timedelta
 from django.core.exceptions import ObjectDoesNotExist
 
+import pytz
+
 def generate_token():
     return uuid.uuid4().hex
 
@@ -24,15 +26,23 @@ def verify_user_by_password(id, password):
 def verify_user_by_token(token):
     try:
         token_line = UserToken.objects.get(token = token)
-        if token_line.status and (datetime.now() < token_line.end):
+        utc = pytz.UTC
+        if token_line.status and (datetime.now().replace(tzinfo=utc) < token_line.end.replace(tzinfo=utc)):
             user_id = token_line.user_id
             user = UserProflie.objects.get(user_id = user_id)
             if user.status == UserStatus.ACTIVATE:
-                return 1
+                return (user.role, user_id)
             else:
-                return 2
+                return (3, '')
         else:
-            return 0
+            return (4, '')
     except ObjectDoesNotExist:
-        return 0    
+        return (4, '')    
+
+def get_role(id):
+    try:
+        user = UserProflie.objects.get(user_id = id)
+    except ObjectDoesNotExist:
+        return 3
+    return user.role   
 
