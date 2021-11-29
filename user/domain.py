@@ -2,7 +2,7 @@ import uuid
 
 from .models import UserProflie, UserToken
 from .enum import UserStatus, UserRole
-from datetime import datetime, timedelta
+from datetime import datetime
 from django.core.exceptions import ObjectDoesNotExist
 
 import pytz
@@ -47,11 +47,11 @@ def get_role(id):
     return user.role   
 
 def role_to_str(role):
-    if role == 0:
+    if role == UserRole.ADMIN:
         return 'administrator'
-    elif role == 1:
+    elif role == UserRole.DONOR:
         return 'donor'
-    elif role == 2:
+    elif role == UserRole.VOLUNTEER:
         return 'volunteer'
     else:
         return 'the others'
