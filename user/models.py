@@ -13,7 +13,7 @@ class UserProflie(models.Model):
     working_hours = models.FloatField(default=0)
     donor_amount = models.FloatField(default=0)
     event_joined = models.JSONField(null=False, default={'event':[]})
-    # the element in 'event' should be {'id': str, time_start: datetimetime.data, time_end: datetime.datatime, 'duty': str}
+    # the element in 'event' should be {'id': str, time_start: datetimetime.datatime, time_end: datetime.datatime, 'duty': str}
     event_doing = models.JSONField(null=False, default={'event':[]})
     # the element in 'event' should be {'id': str, time_start: datetime.datatime, time_end: datetime.datatime, 'duty': str}
     donor_information = models.JSONField(null=False, default={'donor_information':[]})
