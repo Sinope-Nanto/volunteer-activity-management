@@ -16,7 +16,7 @@ class Event(models.Model):
     status = models.IntegerField(default=ActivityStatus.PROGESS)
     info_program = models.JSONField(help_text="the information of program of the event", null=False, default={'program_id': []})
     info_volunteer = models.JSONField(help_text="the information of volunteers join the event", null=False, default={'volunteer_information':[]})
-    # the element in 'volunteer_information' should be {'event_id': str, time_start: datetime.data, time_end: datetime.data, 'duty': str, 'status': int}
+    # the element in 'volunteer_information' should be {'user_id': str, time_start: datetime.data, time_end: datetime.data, 'duty': str, 'status': int}
     info_donor = models.JSONField(help_text="the information of donors", null=False, default={'donor_information':[]})
     # the element in 'donor_information' should be {'event_id': str, 'donor_time': datetime.data, 'amount': float}
 
