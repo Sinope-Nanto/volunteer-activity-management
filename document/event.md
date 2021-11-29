@@ -10,7 +10,7 @@ data = {
 'place' : 'Tokyo Ginza',  
 'require_volunteers_number' : '114',  // 字符串形式的整数  
 'description' : 'Go to Tokyo and act a movie',  
-'start' : '2021-1-11', // '%Y-%M-%D'  
+'start' : '2021-1-11', // '%Y-%m-%d %H:%M:%S'  
 'end' : '2021-1-12'  
 }  
 返回数据：  
@@ -26,7 +26,7 @@ headers = {"token":"393e510803d94fa2a6606d0f7be0fba5"}
 data = {  
 'event_id' : '100000',// program所属的enent的id  
 'title':'Act Movies with Janpanese Famous Actresses',  
-'start' : '2021-1-11', // '%Y-%M-%D'    
+'start' : '2021-1-11', // '%Y-%m-%d %H:%M:%S'    
 'end' : '2021-1-12'  
 }  
 返回数据：  

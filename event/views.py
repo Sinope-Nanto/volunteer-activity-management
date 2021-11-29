@@ -20,8 +20,8 @@ class CreateEventView(APIView):
         except:
             event_id = '100000'
         title = post_data['title']
-        start = datetime.strptime(post_data['start'], "%Y-%m-%d").date()
-        end = datetime.strptime(post_data['end'], "%Y-%m-%d").date()
+        start = datetime.strptime(post_data['start'], "%Y-%m-%d %H:%M:%S")
+        end = datetime.strptime(post_data['end'], "%Y-%m-%d %H:%M:%S")
         place = post_data['place']
         require_volunteers_number = int(post_data['require_volunteers_number'])
         description = post_data['description']
@@ -46,8 +46,8 @@ class CreateProgramView(APIView):
         except:
             program_id = '090000'
         title = post_data['title']
-        start = datetime.strptime(post_data['start'], "%Y-%m-%d").date()
-        end = datetime.strptime(post_data['end'], "%Y-%m-%d").date()
+        start = datetime.strptime(post_data['start'], "%Y-%m-%d %H:%M:%S")
+        end = datetime.strptime(post_data['end'], "%Y-%m-%d %H:%M:%S")
         new_program = Program(event=event_id, title=title, program_id=program_id, start=start, end=end)
         new_program.save()
         event.info_program['program_id'].append(program_id)
