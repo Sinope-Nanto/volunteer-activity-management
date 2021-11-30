@@ -6,7 +6,7 @@ from user.enum import UserRole
 from .models import Event, Program
 from django.db.models import Max
 from django.core.exceptions import AppRegistryNotReady, ObjectDoesNotExist
-from .domain import join_event, quit_event, finish_volunteer
+from .domain import join_event, quit_event, finish_volunteer, donor
 from datetime import datetime
 
 class CreateEventView(APIView):
@@ -103,5 +103,20 @@ class FinishEventView(APIView):
             return APIResponse.create_fail(code=404, msg = 'User don\'t exist.')
         if finish_volunteer(event_id=post_data['event_id'], user_id=post_data['user_id'], is_finish=bool(post_data['is_finish'])):
             return APIResponse.create_success()
-        return APIResponse.create_fail(code=403, msg='User havn\'t joined the event')
-    
+        return APIResponse.create_fail(code=403, msg='User havn\'t joined the event')  
+
+class DonorView(APIView):
+    def post(self, request):
+        token = request.headers['token']
+        post_data = request.data
+        (role, user_id) = verify_user_by_token(token)
+        if not (role == UserRole.DONOR):
+            return APIResponse.create_fail(code=401, msg="You are not Donor.")
+        if donor(id = post_data['id'], user_id=user_id, amount=float(post_data['amount'])):
+            return APIResponse.create_success(data={
+                'donor_amount' : post_data['amount'],
+                'time' : str(datetime.now()),
+                'user_id' : user_id,
+                'donor_id' : post_data['id']
+            })
+        return APIResponse.create_fail(code=403, msg='You can\'t donor the item.')

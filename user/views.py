@@ -30,7 +30,10 @@ class RegisterView(APIView):
 
         return APIResponse.create_success(data={
             'id' : id,
-            'token' : token
+            'token' : token,
+            'role' : role_to_str(int(post_data['role'])),
+            'first_name' : post_data['first_name'],
+            'last_name' : post_data['last_name']
         })
 
 class LoginView(APIView):

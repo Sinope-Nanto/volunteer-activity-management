@@ -81,3 +81,19 @@ token所有人只能为管理员。
 {"code":401,"msg":"you don't enough permissions"}  
 当user_id没有加入event_id时，返回:  
 {"code":403,"msg":"The user havn't joined the event."}  
+# 2021/11/30  
+# 捐赠  
+url: /event/donor/  
+方法：post  
+请求格式：  
+headers = {"token":"393e510803d94fa2a6606d0f7be0fba5"}
+data = {'id':'100000',//捐赠program或者event的id，当捐赠目标为本组织时，id为1.  
+'amount' : '100.00',//捐赠金额，为字符串形式的float     
+}
+token所有人只能为Donor。  
+返回数据：  
+{"code":200,"msg":"","data":{"donor_amount":"100","time":"2021-11-30 16:02:17.778230","user_id":"12153262","donor_id":"090000"}}    
+当权限不足时（不是捐赠员时），返回:  
+{"code":401,"msg":"You are not Donor"}  
+当活动不存在或者已经结束/被终止时，返回:  
+{"code":403,"msg":"You can't donor the item."}  

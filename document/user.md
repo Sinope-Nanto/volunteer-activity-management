@@ -1,6 +1,6 @@
 # 2021/11/28  
 user app目前已经完成的接口：  
-# 注册
+# 注册  
 url: /user/register/  
 方法：post  
 请求格式：  
@@ -135,3 +135,25 @@ data:
 {"code":200,"msg":"","data":{"id":"70671574","first_name":"Sinope","last_name":"Nanto","role":"administrator","status":"0"}}  
 token不属于管理员或者查询的id自身时，返回:  
 {"code":401,"msg":"you don't enough permissions"}  
+# 2021/11/30  
+'id' : id,
+'token' : token,
+'role' : role_to_str(int(post_data['role'])),
+'first_name' : post_data['first_name'],
+'last_name' : post_data['last_name']
+# 注册
+url: /user/register/  
+方法：post  
+请求格式：  
+data:  
+{
+    'first_name' : str,  
+    'last_name'; : str,  
+    'role' : str,  //其中'0'代表管理员，'1'代表捐赠者，'2'代表志愿者。  
+    'password' : str  
+}  
+返回数据：  
+{"code":200,"msg":"","data":{"id":"51923482","token":"3a93c15d92e94fa788e666f0134a2961","role":"donor","first_name":"Sara","last_name":"Hammer"}}  
+其中"id"为账号，"token"为token。  
+当请求错误时，返回:  
+{"code":400,"msg":"Bad request"}  

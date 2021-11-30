@@ -27,4 +27,10 @@ class Program(models.Model):
     status = models.IntegerField(default=ActivityStatus.PROGESS)
     amount_of_fund = models.FloatField(default=0)
     info_donor = models.JSONField(help_text="the information of donors", null=False, default={'donor_information':[]})
-    # the element in 'donor_information' should be {'program_id': str, 'donor_time': datetime.datatime, 'amount': float}
+    # the element in 'donor_information' should be {'donor_id': str, 'donor_time': datetime.datatime, 'amount': float}
+
+class Organization(models.Model):
+    organization_id = models.CharField(max_length=100, default='1')
+    amount_of_fund = models.FloatField(default=0)
+    info_donor = models.JSONField(help_text="the information of donors", null=False, default={'donor_information':[]})
+    # the element in 'donor_information' should be {'donor_id': str, 'donor_time': datetime.datatime, 'amount': float}
