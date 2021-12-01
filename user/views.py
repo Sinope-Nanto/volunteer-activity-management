@@ -2,7 +2,7 @@ from rest_framework.views import APIView
 from utils.api_response import APIResponse
 from .enum import UserRole, UserStatus
 from .models import UserProflie, UserToken
-from .domain import generate_token, verify_user_by_password, verify_user_by_token, get_role, role_to_str
+from .domain import generate_token, verify_user_by_password, verify_user_by_token, get_role, role_to_str, str_to_role
 from django.core.exceptions import ObjectDoesNotExist
 import random
 from datetime import datetime, timedelta
@@ -10,8 +10,8 @@ from datetime import datetime, timedelta
 class RegisterView(APIView):
     def post(self, request):
         post_data = request.data
-
-        if not (int(post_data['role']) == UserRole.DONOR or int(post_data['role']) == UserRole.VOLUNTEER):
+        role = str_to_role(post_data['role'])
+        if not (role == UserRole.DONOR or role == UserRole.VOLUNTEER):
             return APIResponse.create_fail(code=400, msg="bad request")
         
         while True:
@@ -21,7 +21,7 @@ class RegisterView(APIView):
             except ObjectDoesNotExist:
                 break
         
-        new_user = UserProflie(user_id=id, first_name=post_data['first_name'], last_name=post_data['last_name'], role=int(post_data['role']), password=post_data['password'])
+        new_user = UserProflie(user_id=id, first_name=post_data['first_name'], last_name=post_data['last_name'], role=role, password=post_data['password'])
         new_user.save()
         
         token = generate_token()
@@ -31,7 +31,7 @@ class RegisterView(APIView):
         return APIResponse.create_success(data={
             'id' : id,
             'token' : token,
-            'role' : role_to_str(int(post_data['role'])),
+            'role' : role_to_str(role),
             'first_name' : post_data['first_name'],
             'last_name' : post_data['last_name']
         })
@@ -138,7 +138,7 @@ class SearchUserView(APIView):
         if ('last_name' in post_data.keys()) and (not post_data['last_name'] == ''):
             user_list = user_list.filter(last_name=post_data['last_name'])
         if ('role' in post_data.keys()) and (not post_data['role'] == ''):
-            user_list = user_list.filter(role=(post_data['role']))
+            user_list = user_list.filter(role=str_to_role(post_data['role']))
         id_list = []
         for user in user_list:
             id_list.append(user.user_id)
@@ -163,5 +163,9 @@ class GetUserProflieView(APIView):
             'first_name' : user.first_name,
             'last_name' : user.last_name,
             'role' : role_to_str(user.role),
-            'status' : str(user.status)
+            'status' : str(user.status),
+            'donor_amount' : user.donor_amount,
+            'working_hours' : user.working_hours,
+            'donor_information' : user.donor_information['donor_information'],
+            'event_joined' : user.event_joined['event'] + user.event_doing['event']
         })

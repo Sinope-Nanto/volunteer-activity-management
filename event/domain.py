@@ -124,3 +124,11 @@ def donor(id:str, user_id, amount):
     user.donor_information['donor_information'].append({'id': id, 'donor_time': str(date_time), 'amount': amount})
     user.save()
     return True
+
+def status_to_str(status):
+    if status == ActivityStatus.PROGESS:
+        return 'Process' 
+    if status == ActivityStatus.FINISH:
+        return 'Finish'
+    else:
+        return 'Stop'

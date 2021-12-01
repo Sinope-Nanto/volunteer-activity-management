@@ -97,3 +97,9 @@ token所有人只能为Donor。
 {"code":401,"msg":"You are not Donor"}  
 当活动不存在或者已经结束/被终止时，返回:  
 {"code":403,"msg":"You can't donor the item."}  
+# 2021/12/1  
+# 信息查询  
+
+# 目标搜索  
+
+# 活动状态更改  

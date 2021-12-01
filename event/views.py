@@ -1,12 +1,14 @@
+from django.urls.conf import include
 from rest_framework.views import APIView
+from event.enum import ActivityStatus
 from user.models import UserProflie
 from utils.api_response import APIResponse
 from user.domain import verify_user_by_token
 from user.enum import UserRole
-from .models import Event, Program
+from .models import Event, Program, Organization
 from django.db.models import Max
 from django.core.exceptions import AppRegistryNotReady, ObjectDoesNotExist
-from .domain import join_event, quit_event, finish_volunteer, donor
+from .domain import join_event, organization_get_money, program_get_money, quit_event, finish_volunteer, donor, status_to_str
 from datetime import datetime
 
 class CreateEventView(APIView):
@@ -120,3 +122,98 @@ class DonorView(APIView):
                 'donor_id' : post_data['id']
             })
         return APIResponse.create_fail(code=403, msg='You can\'t donor the item.')
+
+class ChangeStatusView(APIView):
+    def post(self, request):
+        token = request.headers['token']
+        post_data = request.data
+        (role, user_id) = verify_user_by_token(token)
+        if not (role == UserRole.ADMIN):
+            return APIResponse.create_fail(code=401, msg="you don't enough permissions")
+        target_id = post_data['id']
+        try:
+            event = Event.objects.get(event_id = target_id)
+            target = event
+        except ObjectDoesNotExist:
+            try:
+                program = Program.objects.get(program_id = target_id)
+                target = program
+            except ObjectDoesNotExist:
+                return APIResponse.create_fail(code=404, msg='Target id doesn\'t exist.')
+        target.status = int(post_data['status'])
+        target.save()
+        return APIResponse.create_success()
+
+class GetTargetInfoView(APIView):
+    def post(self, request):
+        token = request.headers['token']
+        post_data = request.data
+        (role, user_id) = verify_user_by_token(token)
+        if role > 2:
+            return APIResponse.create_fail(code=401, msg="Please login.")
+        target_id = post_data['id']
+        if target_id == '1':
+            if role == UserRole.ADMIN:
+                organization = Organization.objects.get(organization_id = '1')
+                return APIResponse.create_success(data={'amount_of_fund': organization.amount_of_fund, 'info_donor': organization.info_donor['donor_information']})
+            else:
+                return APIResponse.create_fail(code=401, msg="you don't enough permissions")
+        try:
+            event = Event.objects.get(event_id = target_id)
+            target = event
+            is_event = True
+        except ObjectDoesNotExist:
+            try:
+                program = Program.objects.get(program_id = target_id)
+                target = program
+                is_event = False
+            except ObjectDoesNotExist:
+                return APIResponse.create_fail(code=404, msg='Target id doesn\'t exist.')
+        if target.status == ActivityStatus.STOP:
+            return APIResponse.create_fail(code=404, msg='Target id doesn\'t exist.')        
+        data = {'title': target.title, 'status': status_to_str(target.status)}
+        if is_event:
+            data['require_volunteers_number'] = target.require_volunteers_number
+            data['now_volunteers_number'] = target.now_volunteers_number
+            data['place'] = target.place
+            data['start'] = str(target.start)
+            data['end'] = str(target.end)
+            data['description'] = target.description
+            data['program'] = target.program
+        else:
+            data['event'] = target.event['event_id']
+        if role == UserRole.ADMIN:
+            if is_event:
+                data['info_volunteer'] = target.info_volunteer['volunteer_information']
+            data['amount_of_fund'] = target.amount_of_fund
+            data['info_donor'] = target.info_donor['donor_information']
+
+        return APIResponse.create_success(data=data)
+
+class SearchProgramOrEventView(APIView):
+    def post(self, request):
+        post_data = request.data
+        event_list = Event.objects.exclude(status = ActivityStatus.STOP)
+        program_list = Program.objects.exclude(status = ActivityStatus.STOP)
+        include_program = True
+        if ('place' in post_data.keys()) and (not post_data['place'] == ''):
+            include_program = False
+            event_list = event_list.filter(place=post_data['place'])
+        if ('program' in post_data.keys()) and (not post_data['program'] == ''):
+            include_program = False
+            event_list = event_list.filter(program=post_data['program'])
+        if ('title' in post_data.keys()) and (not post_data['title'] == ''):
+            event_list = event_list.filter(title=post_data['title'])
+            program_list = program_list.filter(title=post_data['title'])
+        if ('status' in post_data.keys()) and (not post_data['status'] == ''):
+            event_list = event_list.filter(status=int(post_data['status']))
+            program_list = program_list.filter(status=int(post_data['status']))
+        return_list = []
+        for event in event_list:
+            return_list.append({'id':event.event_id, 'type':'event', 'title':event.title})
+        if include_program:
+            for program in program_list:
+                return_list.append({'id':program.program_id, 'type':'program', 'title':program.title})
+        return APIResponse.create_success(data={
+            'result_list' : return_list
+        })

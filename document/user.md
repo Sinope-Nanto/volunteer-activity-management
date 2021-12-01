@@ -78,7 +78,7 @@ data:
 {   
     'id' : str, //用户id   
     'password' : str,//用户密码。    
-    'new_password' : str//新密码
+    'new_password' : str//新密码  
 }  
 返回数据：  
 {"code":200,"msg":"","data":{}}    
@@ -114,7 +114,7 @@ data:
 {     
     'first_name' : str,   
     'last_name' : str,   
-    'role' : str  
+    'role' : str:'Admin', 'Donor' or 'Volunteer'  
 }  
 返回数据：  
 {"code":200,"msg":"","data":{"id_list":["70671574","64162251","51923482"]}} 
@@ -149,7 +149,7 @@ data:
 {
     'first_name' : str,  
     'last_name'; : str,  
-    'role' : str,  //其中'0'代表管理员，'1'代表捐赠者，'2'代表志愿者。  
+    'role' : str,  //其中'Admin'代表管理员，'Donor'代表捐赠者，'Volunteer'代表志愿者。  
     'password' : str  
 }  
 返回数据：  
