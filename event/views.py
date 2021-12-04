@@ -181,7 +181,10 @@ class GetTargetInfoView(APIView):
             data['description'] = target.description
             data['program'] = target.program
         else:
-            data['event'] = target.event['event_id']
+            data['event'] = []
+            for event_id in target.event['event_id']:
+                event =  Event.objects.get(event_id=event_id)
+                data['event'].append({'event_id':event_id, 'title': event.title})
         if role == UserRole.ADMIN:
             if is_event:
                 data['info_volunteer'] = target.info_volunteer['volunteer_information']

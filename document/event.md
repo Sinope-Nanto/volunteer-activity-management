@@ -99,7 +99,91 @@ token所有人只能为Donor。
 {"code":403,"msg":"You can't donor the item."}  
 # 2021/12/1  
 # 信息查询  
-
+url: /event/getinfo/
+方法：post  
+请求格式：  
+headers = {"token":"393e510803d94fa2a6606d0f7be0fba5"}
+data = {'id' : '100000'}  
+当请求者是管理员，请求id为'1'时,返回组织收捐赠信息：  
+{"code":200,"msg":"","data":{
+    'amount_of_fund': 1000.00,   
+    'info_donor': [{'donor_id': '123456', 'donor_time': '2021-11-01 21:00:00.55', 'amount': 100},{'donor_id': '123456', 'donor_time': '2021-11-01 21:00:00.55', 'amount': 100}]  
+    }  
+}  
+当请求者不是管理员，请求id为Program时：
+返回数据：  
+{"code":200,"msg":"","data":{
+    'title': 'ABCDEFG',   
+    'status': '1',//活动状态，0代表进行中，1代表结束  
+    'event' : [{'event_id' : '100000', 'title' : 'ABC'},{'event_id' : '100001', 'title' : 'ABCD'}]//program所属的event的id,title列表  
+    }  
+}  
+当请求者是管理员，请求id为Program时：
+返回数据：  
+{"code":200,"msg":"","data":{
+    'title': 'ABCDEFG',   
+    'status': '1',//活动状态，0代表进行中，1代表结束  
+    'event' : [{'event_id' : '100000', 'title' : 'ABC'},{'event_id' : '100001', 'title' : 'ABCD'}]//program所属的event的id,title列表  
+    'amount_of_fund' : 100.00,
+    'info_donor' : [{'donor_id': '123456', 'donor_time': '2021-11-01 21:00:00.55', 'amount': 100},{'donor_id': '123456', 'donor_time': '2021-11-01 21:00:00.55', 'amount': 100}]
+    }
+} 
+当请求者不是管理员，请求id为Event时：
+返回数据：  
+{"code":200,"msg":"","data":{
+    'title': 'ABCDEFG',   
+    'status': '1',//活动状态，0代表进行中，1代表结束  
+    'require_volunteers_number' = 100  
+    'now_volunteers_number' = 1  
+    'place' = 'Tokyo',  
+    'start' = '2021-11-01 21:00:00',  
+    'end' = '2021-11-02 21:00:00',  
+    'description' = 'AWJFHHFUOWEHOUIF',  
+    'program' = '090000'//Event所属的Program  
+    }  
+}  
+当请求者是管理员，请求id为Event时：
+返回数据：  
+{"code":200,"msg":"","data":{
+    'title': 'ABCDEFG',   
+    'status': '1',//活动状态，0代表进行中，1代表结束  
+    'require_volunteers_number' = 100  
+    'now_volunteers_number' = 1  
+    'place' = 'Tokyo',  
+    'start' = '2021-11-01 21:00:00',  
+    'end' = '2021-11-02 21:00:00',  
+    'description' = 'AWJFHHFUOWEHOUIF',  
+    'program' = '090000'//Event所属的Program  
+    'amount_of_fund' : 100.00,
+    'info_donor' : [{'donor_id': '123456', 'donor_time': '2021-11-01 21:00:00.55', 'amount': 100},{'donor_id': '123456', 'donor_time': '2021-11-01 21:00:00.55', 'amount': 100}],  
+    'info_volunteer' : [{'user_id': '123456789', time_start: '2021-11-01 21:00:00.55', time_end: '2021-11-01 21:00:00.55', 'duty': 'leader', 'status': 1}]  
+    //其中0代表进行中，1代表已完成，2代表已退出  
+    }  
+}  
 # 目标搜索  
-
+url: /event/search/  
+方法：post  
+请求格式：  
+//下列字段均可为空或无  
+data = {'place':'Tokyo',  
+'program' : '090000',//event所属program的id  
+'title' : 'ABCDEFG',  
+'status' : '0'//活动状态，0代表进行中，1代表结束  
+}
+返回数据：  
+{
+    "code":200,"msg":"","data":{
+    'result_list' : [{'id':'100000', 'type':'event', 'title':'ABCDER'}] 
+    }
+}   
 # 活动状态更改  
+url: /event/status/  
+方法：post  
+请求格式：  
+headers = {"token":"393e510803d94fa2a6606d0f7be0fba5"}  
+data = {'id':'100000',  
+'status' : '0'//活动状态，0代表进行中，1代表结束,2代表终止/删除  
+}
+返回数据：  
+{"code":200,"msg":""}   
+
