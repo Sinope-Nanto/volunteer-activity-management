@@ -211,12 +211,14 @@ class SearchProgramOrEventView(APIView):
         if ('status' in post_data.keys()) and (not post_data['status'] == ''):
             event_list = event_list.filter(status=int(post_data['status']))
             program_list = program_list.filter(status=int(post_data['status']))
-        return_list = []
+        return_event_list = []
+        return_program_list = []
         for event in event_list:
-            return_list.append({'id':event.event_id, 'type':'event', 'title':event.title})
+            return_event_list.append({'id':event.event_id, 'type':'event', 'title':event.title})
         if include_program:
             for program in program_list:
-                return_list.append({'id':program.program_id, 'type':'program', 'title':program.title})
+                return_program_list.append({'id':program.program_id, 'type':'program', 'title':program.title})
         return APIResponse.create_success(data={
-            'result_list' : return_list
+            'return_event_list' : return_event_list,
+            'return_program_list' : return_program_list
         })
