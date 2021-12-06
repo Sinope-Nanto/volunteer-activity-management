@@ -14,6 +14,7 @@ class APIResponse:
             "msg": "",
             "data": {} if not data else data
         }
+        print(response_data)
         return Response(data=response_data, content_type="application/json")
 
     @classmethod
@@ -23,6 +24,7 @@ class APIResponse:
             "msg": msg,
             "data": {}
         }
+        print(response_data)
         return Response(data=response_data, content_type="application/json")
 
     def create(self):

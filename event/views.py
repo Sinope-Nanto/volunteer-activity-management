@@ -11,6 +11,16 @@ from django.core.exceptions import AppRegistryNotReady, ObjectDoesNotExist
 from .domain import join_event, organization_get_money, program_get_money, quit_event, finish_volunteer, donor, status_to_str
 from datetime import datetime
 
+def get_max_id():
+    all_Event = Event.objects.all()
+    all_Program = Program.objects.all()
+    id_list = []
+    for event in all_Event:
+        id_list.append(int(event.event_id))
+    for program in all_Program:
+        id_list.append(int(program.program_id))
+    return max(id_list)
+
 class CreateEventView(APIView):
 
     def post(self, request):
@@ -24,14 +34,15 @@ class CreateEventView(APIView):
         if not verify_user_by_token(token)[0] == UserRole.ADMIN:
             return APIResponse.create_fail(code=401, msg="you don't enough permissions")
         try:    
-            event_id =  str(max([int(Event.objects.all().aggregate(Max('event_id'))), int(Program.objects.all().aggregate(Max('program_id')))]) + 1)
-        except:
+            event_id = get_max_id() + 1
+        except Exception as e:
+            print(e)
             event_id = '100000'
         program.event['event_id'].append(event_id)
         program.save()
         title = post_data['title']
-        start = datetime.strptime(post_data['start'], "%Y-%m-%d %H:%M:%S")
-        end = datetime.strptime(post_data['end'], "%Y-%m-%d %H:%M:%S")
+        start = datetime.strptime(post_data['start'], "%Y-%m-%dT%H:%M:%S.000Z")
+        end = datetime.strptime(post_data['end'], "%Y-%m-%dT%H:%M:%S.000Z")
         place = post_data['place']
         require_volunteers_number = int(post_data['require_volunteers_number'])
         description = post_data['description']
@@ -47,8 +58,9 @@ class CreateProgramView(APIView):
         if not verify_user_by_token(token)[0] == UserRole.ADMIN:
             return APIResponse.create_fail(code=401, msg="you don't enough permissions")
         try:    
-            program_id =  str(max([int(Event.objects.all().aggregate(Max('event_id'))), int(Program.objects.all().aggregate(Max('program_id')))]) + 1)
-        except:
+            program_id = get_max_id() + 1
+        except Exception as e:
+            print(e)
             program_id = '090000'
         title = post_data['title']
         new_program = Program(title=title, program_id=program_id)
@@ -171,7 +183,7 @@ class GetTargetInfoView(APIView):
                 return APIResponse.create_fail(code=404, msg='Target id doesn\'t exist.')
         if target.status == ActivityStatus.STOP:
             return APIResponse.create_fail(code=404, msg='Target id doesn\'t exist.')        
-        data = {'title': target.title, 'status': status_to_str(target.status)}
+        data = {'id': target_id,'title': target.title, 'status': str(target.status)}
         if is_event:
             data['require_volunteers_number'] = target.require_volunteers_number
             data['now_volunteers_number'] = target.now_volunteers_number
@@ -214,7 +226,8 @@ class SearchProgramOrEventView(APIView):
         return_event_list = []
         return_program_list = []
         for event in event_list:
-            return_event_list.append({'id':event.event_id, 'type':'event', 'title':event.title})
+            return_event_list.append({'id':event.event_id, 'type':'event', 'title':event.title, 'status':event.status, 'startTime':str(event.start), 'endTime':str(event.end),
+            'requiredVolunteersNumber': event.require_volunteers_number, 'volunteersNumberSoFar': event.now_volunteers_number, 'place':event.place})
         if include_program:
             for program in program_list:
                 return_program_list.append({'id':program.program_id, 'type':'program', 'title':program.title})
@@ -222,3 +235,50 @@ class SearchProgramOrEventView(APIView):
             'return_event_list' : return_event_list,
             'return_program_list' : return_program_list
         })
+
+class GetAllEventInfoView(APIView):
+
+    def post(self, request):
+        token = request.headers['token']
+        post_data = request.data
+        (role, id) = verify_user_by_token(token)
+        if not (role == UserRole.ADMIN):
+            return APIResponse.create_fail(code=401, msg="you don't enough permissions")
+        event_list = Event.objects.exclude(status = ActivityStatus.STOP)
+        if post_data['id'] != '1':
+            event_list = event_list.filter(program=post_data['id'])
+        re_data = []
+        for event in event_list:
+            data = {'id': event.event_id,'title': event.title, 'status': str(event.status)}
+            data['require_volunteers_number'] = event.require_volunteers_number
+            data['now_volunteers_number'] = event.now_volunteers_number
+            data['place'] = event.place
+            data['start'] = str(event.start)
+            data['end'] = str(event.end)
+            data['description'] = event.description
+            data['program'] = event.program
+            data['info_volunteer'] = event.info_volunteer['volunteer_information']
+            data['amount_of_fund'] = event.amount_of_fund
+            data['info_donor'] = event.info_donor['donor_information']
+            re_data.append(data)
+        return APIResponse.create_success(data=re_data)
+
+class GetAllProgramInfoView(APIView):
+
+    def get(self, request):
+        token = request.headers['token']
+        (role, id) = verify_user_by_token(token)
+        if not (role == UserRole.ADMIN):
+            return APIResponse.create_fail(code=401, msg="you don't enough permissions")
+        program_list = Program.objects.all()
+        re_data = []
+        for program in program_list:
+            data = {'id': program.program_id,'title': program.title, 'status': str(program.status)}
+            data['event'] = []
+            for event_id in program.event['event_id']:
+                event =  Event.objects.get(event_id=event_id)
+                data['event'].append({'event_id':event_id, 'title': event.title})
+            data['amount_of_fund'] = program.amount_of_fund
+            data['info_donor'] = program.info_donor['donor_information']
+            re_data.append(data)
+        return APIResponse.create_success(data=re_data)

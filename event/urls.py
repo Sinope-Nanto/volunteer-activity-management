@@ -1,6 +1,6 @@
 from django.urls import path
 from .views import CreateEventView, CreateProgramView, JoinEventView, QuitEventView, FinishEventView, DonorView, ChangeStatusView\
-    , SearchProgramOrEventView, GetTargetInfoView
+    , SearchProgramOrEventView, GetTargetInfoView, GetAllProgramInfoView, GetAllEventInfoView
 
 urlpatterns = [
     path("newevent/", CreateEventView.as_view()),
@@ -12,4 +12,6 @@ urlpatterns = [
     path("status/", ChangeStatusView.as_view()),
     path("getinfo/", GetTargetInfoView.as_view()),
     path("search/", SearchProgramOrEventView.as_view()),
+    path("allprogram/", GetAllProgramInfoView.as_view()),
+    path("allevent/", GetAllEventInfoView.as_view()),
 ]

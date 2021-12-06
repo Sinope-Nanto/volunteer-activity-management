@@ -187,3 +187,11 @@ data = {'id':'100000',
 返回数据：  
 {"code":200,"msg":""}   
 
+# 获取所有Progarm详细信息
+url: /event/allprogram/ 
+方法：get  
+
+# 获取所有Event详细信息
+url: /event/allevent/ 
+方法：post  
+{'id' : '1' or program_id}

@@ -65,3 +65,11 @@ def str_to_role(role):
         return UserRole.VOLUNTEER
     else:
         return -1
+
+def status_to_str(status):
+    if status == UserStatus.ACTIVATE:
+        return 'Normal'
+    elif status == UserStatus.FREEZE:
+        return 'Freezen'
+    else:
+        return 'Delete'

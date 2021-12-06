@@ -1,8 +1,9 @@
 from rest_framework.views import APIView
+from event.models import Program
 from utils.api_response import APIResponse
 from .enum import UserRole, UserStatus
 from .models import UserProflie, UserToken
-from .domain import generate_token, verify_user_by_password, verify_user_by_token, get_role, role_to_str, str_to_role
+from .domain import generate_token, verify_user_by_password, verify_user_by_token, get_role, role_to_str, str_to_role, status_to_str
 from django.core.exceptions import ObjectDoesNotExist
 import random
 from datetime import datetime, timedelta
@@ -48,7 +49,8 @@ class LoginView(APIView):
                 t.delete()
             new_token = UserToken(user_id = post_data['id'], token=token, end=(datetime.now() + timedelta(days=3)))
             new_token.save()
-            return APIResponse.create_success(data={'token' : token})
+            user = UserProflie.objects.get(user_id = post_data['id'])
+            return APIResponse.create_success(data={'token' : token, 'role': role_to_str(user.role)})
         if result == 0:
             return APIResponse.create_fail(code=401, msg="Incorrect username or password")
         else:
@@ -66,9 +68,11 @@ class PermissionManageView(APIView):
             user = UserProflie.objects.get(user_id = post_data['id'])
         except ObjectDoesNotExist:
             return APIResponse.create_fail(code=404, msg='The target user does not exist')
-        if (int(post_data['role']) < 0 or int(post_data['role']) > 2):
+        if (str_to_role(post_data['role']) < 0 or str_to_role(post_data['role']) > 2):
             return APIResponse.create_fail(code=400, msg="bad request")
-        user.role = int(post_data['role'])
+        user.role = str_to_role(post_data['role'])
+        user.first_name = post_data['first_name']
+        user.last_name = post_data['last_name']
         user.save()
         return APIResponse.create_success()
 
@@ -169,3 +173,29 @@ class GetUserProflieView(APIView):
             'donor_information' : user.donor_information['donor_information'],
             'event_joined' : user.event_joined['event'] + user.event_doing['event']
         })
+
+class GetAllUserProfileView(APIView):
+
+    def get(self, request):
+        token = request.headers['token']
+        (role, id) = verify_user_by_token(token)
+        if not (role == UserRole.ADMIN):
+            return APIResponse.create_fail(code=401, msg="you don't enough permissions")
+        user_list = UserProflie.objects.all()
+        re_data = []
+        for user in user_list:
+            if not user.status == UserStatus.DELETE:
+                data = {
+                'id' : user.user_id,
+                'firstName' : user.first_name ,
+                'lastName' : user.last_name,
+                'role' : role_to_str(user.role),
+                'status' : str(user.status),
+                'volunteerTime': user.working_hours,
+                'volunteerEvents': {'eventsJoined':user.event_joined, 'eventsDoing':user.event_doing},
+                'donationAmount' : user.donor_amount,
+                'donationInfo' : user.donor_information
+                }
+                re_data.append(data)
+        
+        return APIResponse.create_success(data=re_data)
